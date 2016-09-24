@@ -22,6 +22,7 @@ import femr.common.models.MissionItem;
 import femr.common.models.MissionTripItem;
 import femr.util.stringhelpers.StringUtils;
 import play.data.validation.ValidationError;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -38,7 +39,7 @@ public class EditViewModel {
     private List<String> roles;
     private List<MissionTripItem> missionTripItems;
 
-    public List<ValidationError> validate(){
+    public List<ValidationError> validate() {
         Pattern hasUppercase = Pattern.compile("[A-Z]");
         Pattern hasNumber = Pattern.compile("\\d");
         List<ValidationError> errors = new ArrayList<>();
@@ -46,15 +47,17 @@ public class EditViewModel {
             errors.add(new ValidationError("firstName", "first name is a required field"));
         if (StringUtils.isNullOrWhiteSpace(email))
             errors.add(new ValidationError("email", "email is a required field"));
-        if (!newPassword.equals(newPasswordVerify))
-            errors.add(new ValidationError("newPassword", "passwords do not match"));
-        else if(newPassword.isEmpty() || newPasswordVerify.isEmpty())
-            errors.add(new ValidationError("newPassword", "password field is empty"));
-        else {
-            if(newPassword.length() < 6 || !hasUppercase.matcher(newPassword).find()
-                    || !hasNumber.matcher(newPassword).find())      //AJ Saclayan Password Constraints
-                errors.add(new ValidationError("newPassword",
-                        "password must have at least 6 characters with at least one upper case letter and number"));
+        if (!newPassword.isEmpty() || !newPasswordVerify.isEmpty()) {
+            if (newPassword.isEmpty() || newPasswordVerify.isEmpty())
+                errors.add(new ValidationError("newPassword", "password field is empty"));
+            else if (!newPassword.equals(newPasswordVerify))
+                errors.add(new ValidationError("newPassword", "passwords do not match"));
+            else {
+                if (newPassword.length() < 6 || !hasUppercase.matcher(newPassword).find()
+                        || !hasNumber.matcher(newPassword).find())      //AJ Saclayan Password Constraints
+                    errors.add(new ValidationError("newPassword",
+                            "password must have at least 6 characters with at least one upper case letter and number"));
+            }
         }
         if (roles == null || roles.size() < 1)
             errors.add(new ValidationError("roles", "a user needs at least one role"));
