@@ -136,4 +136,8 @@ public interface IMedicationService {
      * and/or errors if they exist
      */
     ServiceResponse<ObjectNode> retrieveAllMedicationsWithID(Integer tripId);
+
+    ServiceResponse<List<String>> retrieveAllMedications();
+
+    ServiceResponse<MedicationItem> removeMedication(int id);
 }
