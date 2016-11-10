@@ -36,6 +36,7 @@ import femr.data.models.mysql.*;
 import femr.data.models.mysql.concepts.ConceptDiagnosis;
 import femr.util.calculations.LocaleUnitConverter;
 import femr.util.stringhelpers.StringUtils;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -106,7 +107,7 @@ public class SearchService implements ISearchService {
             Integer weeksPregnant = QueryHelper.findWeeksPregnant(patientEncounterVitalRepository, recentEncounter.getId());
 
             String ageClassification = null;
-            if (recentEncounter.getPatientAgeClassification() != null){
+            if (recentEncounter.getPatientAgeClassification() != null) {
                 ageClassification = recentEncounter.getPatientAgeClassification().getName();
             }
 
@@ -141,10 +142,10 @@ public class SearchService implements ISearchService {
             }
 
             // If metric setting enabled convert response patientItem to metric
-            if (isMetric()){
+            if (isMetric()) {
                 patientItem = LocaleUnitConverter.toMetric(patientItem);
-            }else {
-               //added for femr-136 - dual unit display
+            } else {
+                //added for femr-136 - dual unit display
                 patientItem = LocaleUnitConverter.forDualUnitDisplay(patientItem);
             }
 
@@ -180,7 +181,7 @@ public class SearchService implements ISearchService {
             Integer weeksPregnant = QueryHelper.findWeeksPregnant(patientEncounterVitalRepository, patientEncounter.getId());
 
             String ageClassification = null;
-            if (patientEncounter.getPatientAgeClassification() != null){
+            if (patientEncounter.getPatientAgeClassification() != null) {
                 ageClassification = patientEncounter.getPatientAgeClassification().getName();
             }
 
@@ -309,7 +310,7 @@ public class SearchService implements ISearchService {
         ServiceResponse<List<PrescriptionItem>> response = new ServiceResponse<>();
 
         ExpressionList<PatientPrescription> query = QueryProvider.getPatientPrescriptionQuery()
-                .fetch("medication.medicationInventory" )
+                .fetch("medication.medicationInventory")
                 .fetch("patientEncounter")
                 .where()
                 .eq("encounter_id", encounterId);
@@ -318,14 +319,13 @@ public class SearchService implements ISearchService {
             List<? extends IPatientPrescription> patientPrescriptions = patientPrescriptionRepository.find(query);
 
             List<PrescriptionItem> prescriptionItems = new ArrayList<>();
-            for( IPatientPrescription pp : patientPrescriptions )
-            {
+            for (IPatientPrescription pp : patientPrescriptions) {
                 // Don't get prescriptions with a replacement
-                if( pp.getPatientPrescriptionReplacements() != null && pp.getPatientPrescriptionReplacements().size() > 0 )
+                if (pp.getPatientPrescriptionReplacements() != null && pp.getPatientPrescriptionReplacements().size() > 0)
                     continue;
 
                 MedicationInventory inventory = null;
-                if( pp.getMedication().getMedicationInventory().size() > 0 ) {
+                if (pp.getMedication().getMedicationInventory().size() > 0) {
 
                     inventory = pp.getMedication()
                             .getMedicationInventory()
@@ -518,29 +518,7 @@ public class SearchService implements ISearchService {
             List<PatientItem> patientItems = new ArrayList<>();
             for (IPatient patient : patients) {
                 //patientItems.add(DomainMapper.createPatientItem(p, null, null, null, null));
-                String pathToPhoto = null;
-                Integer photoId = null;
-                if (patient.getPhoto() != null) {
-                    pathToPhoto = patient.getPhoto().getFilePath();
-                    photoId = patient.getPhoto().getId();
-                }
-                patientItems.add(itemModelMapper.createPatientItem(
-                        patient.getId(),
-                        patient.getFirstName(),
-                        patient.getLastName(),
-                        patient.getCity(),
-                        patient.getAddress(),
-                        patient.getUserId(),
-                        patient.getAge(),
-                        patient.getSex(),
-                        null,
-                        null,
-                        null,
-                        null,
-                        pathToPhoto,
-                        photoId,
-                        null
-                ));
+                patientItems.add(createPatientItem(patient));
             }
             response.setResponseObject(patientItems);
         } catch (Exception ex) {
@@ -548,6 +526,40 @@ public class SearchService implements ISearchService {
         }
 
         return response;
+    }
+
+    /**
+     * Creates a {@see PatientItem} object from a {@see IPatient} object making sure that
+     * {@code pathToPhoto} and {@code photoId} are set correctly.
+     *
+     * @param patient The patient used
+     * @return {@code PatientItem} object representing the patient.
+     */
+    private PatientItem createPatientItem(IPatient patient) {
+        String pathToPhoto = null;
+        Integer photoId = null;
+        if (patient.getPhoto() != null) {
+            pathToPhoto = patient.getPhoto().getFilePath();
+            photoId = patient.getPhoto().getId();
+        }
+
+        return itemModelMapper.createPatientItem(
+                patient.getId(),
+                patient.getFirstName(),
+                patient.getLastName(),
+                patient.getCity(),
+                patient.getAddress(),
+                patient.getUserId(),
+                patient.getAge(),
+                patient.getSex(),
+                null,
+                null,
+                null,
+                null,
+                pathToPhoto,
+                photoId,
+                null
+        );
     }
 
     /**
@@ -624,30 +636,7 @@ public class SearchService implements ISearchService {
             List<PatientItem> patientItems = new ArrayList<>();
 
             for (IPatient patient : allPatients) {
-
-                String pathToPhoto = null;
-                Integer photoId = null;
-                if (patient.getPhoto() != null) {
-                    pathToPhoto = patient.getPhoto().getFilePath();
-                    photoId = patient.getPhoto().getId();
-                }
-                PatientItem currPatient = itemModelMapper.createPatientItem(
-                        patient.getId(),
-                        patient.getFirstName(),
-                        patient.getLastName(),
-                        patient.getCity(),
-                        patient.getAddress(),
-                        patient.getUserId(),
-                        patient.getAge(),
-                        patient.getSex(),
-                        null,
-                        null,
-                        null,
-                        null,
-                        pathToPhoto,
-                        photoId,
-                        null
-                );
+                PatientItem currPatient = createPatientItem(patient);
 
                 if (patient.getPhoto() != null) {
                     currPatient.setPathToPhoto("/photo/patient/" + currPatient.getId() + "?showDefault=false");
@@ -708,11 +697,12 @@ public class SearchService implements ISearchService {
         return isMetric.isActive();
     }
 
-    /** AJ Saclayan
+    /**
+     * AJ Saclayan
      * {@inheritDoc}
      */
     @Override
-    public ServiceResponse<List<CityItem>> retrieveCitiesFromQueryString(String citySearchQuery){
+    public ServiceResponse<List<CityItem>> retrieveCitiesFromQueryString(String citySearchQuery) {
         ServiceResponse<List<CityItem>> response = new ServiceResponse<>();
         if (StringUtils.isNullOrWhiteSpace(citySearchQuery)) {
             response.addError("", "bad parameters");
@@ -737,11 +727,11 @@ public class SearchService implements ISearchService {
         //TODO: filter these by the current country of the team
         Query<MissionCity> query = null;
 
-            query = QueryProvider.getMissionCityQuery()
-                    .where()
-                    .eq("name", citySearchQuery)
-                    .order()
-                    .desc("id");
+        query = QueryProvider.getMissionCityQuery()
+                .where()
+                .eq("name", citySearchQuery)
+                .order()
+                .desc("id");
 
         //Execute the query
         try {
@@ -764,10 +754,11 @@ public class SearchService implements ISearchService {
 
     /**
      * AJ Saclayan
+     *
      * @return
      */
     @Override
-    public ServiceResponse<List<CityItem>> retrieveCitiesForSearch(){
+    public ServiceResponse<List<CityItem>> retrieveCitiesForSearch() {
         ServiceResponse<List<CityItem>> response = new ServiceResponse<>();
 
         try {
@@ -780,7 +771,7 @@ public class SearchService implements ISearchService {
 //                allPatients = QueryHelper.findPatients(patientRepository, missionTrip.getMissionCity().getMissionCountry().getName());
 //            }else{
 
-                allCities = QueryHelper.findCities(cityRepository);
+            allCities = QueryHelper.findCities(cityRepository);
 //            }
 
             List<CityItem> cityItems = new ArrayList<>();
