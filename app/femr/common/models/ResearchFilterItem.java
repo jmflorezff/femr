@@ -18,7 +18,7 @@
 */
 package femr.common.models;
 
-import java.util.List;
+import femr.ui.models.research.FilterViewModel;
 
 public class ResearchFilterItem {
 
@@ -33,7 +33,25 @@ public class ResearchFilterItem {
     private Float filterRangeEnd;
     private String medicationName;
     private String orderBy;
-    private Integer MissionTripId; // Andrew Trip Filter
+    private Integer missionTripId;
+
+    public ResearchFilterItem(FilterViewModel filterViewModel) {
+        this.primaryDataset = filterViewModel.getPrimaryDataset();
+        this.secondaryDataset = filterViewModel.getSecondaryDataset();
+        this.graphType = filterViewModel.getGraphType();
+        this.startDate = filterViewModel.getStartDate();
+        this.endDate = filterViewModel.getEndDate();
+
+        Integer groupFactor = filterViewModel.getGroupFactor();
+        this.groupFactor = groupFactor;
+        this.groupPrimary =
+                groupFactor != null && groupFactor > 0 && filterViewModel.isGroupPrimary();
+
+        setFilterRangeStart(filterViewModel.getFilterRangeStart());
+        setFilterRangeEnd(filterViewModel.getFilterRangeEnd());
+        this.medicationName = filterViewModel.getMedicationName();
+        this.missionTripId = filterViewModel.getMissionTripId();
+    }
 
     public String getPrimaryDataset() {
         return primaryDataset;
@@ -75,15 +93,25 @@ public class ResearchFilterItem {
         this.endDate = endDate;
     }
 
-    public boolean isGroupPrimary() { return groupPrimary; }
+    public boolean isGroupPrimary() {
+        return groupPrimary;
+    }
 
-    public void setGroupPrimary(boolean groupPrimary) { this.groupPrimary = groupPrimary; }
+    public void setGroupPrimary(boolean groupPrimary) {
+        this.groupPrimary = groupPrimary;
+    }
 
-    public Integer getGroupFactor() { return groupFactor; }
+    public Integer getGroupFactor() {
+        return groupFactor;
+    }
 
-    public void setGroupFactor(Integer groupFactor) { this.groupFactor = groupFactor; }
+    public void setGroupFactor(Integer groupFactor) {
+        this.groupFactor = groupFactor;
+    }
 
-    public Float getFilterRangeStart() { return filterRangeStart; }
+    public Float getFilterRangeStart() {
+        return filterRangeStart;
+    }
 
     public void setFilterRangeStart(Float filterRangeStart) {
 
@@ -97,7 +125,9 @@ public class ResearchFilterItem {
         }
     }
 
-    public Float getFilterRangeEnd() { return filterRangeEnd; }
+    public Float getFilterRangeEnd() {
+        return filterRangeEnd;
+    }
 
     public void setFilterRangeEnd(Float filterRangeEnd) {
 
@@ -111,13 +141,21 @@ public class ResearchFilterItem {
         }
     }
 
-    public String getMedicationName() { return medicationName; }
+    public String getMedicationName() {
+        return medicationName;
+    }
 
-    public void setMedicationName(String medicationName) { this.medicationName = medicationName; }
+    public void setMedicationName(String medicationName) {
+        this.medicationName = medicationName;
+    }
 
-    public Integer getMissionTripId() { return MissionTripId; } //Andrew Trip Filter
+    public Integer getMissionTripId() {
+        return missionTripId;
+    } //Andrew Trip Filter
 
-    public void setMissionTripId(Integer MissionTripId) { this.MissionTripId = MissionTripId; } //Andrew Trip Filter
+    public void setMissionTripId(Integer MissionTripId) {
+        this.missionTripId = MissionTripId;
+    } //Andrew Trip Filter
 
     public String getOrderBy() {
         return orderBy;
